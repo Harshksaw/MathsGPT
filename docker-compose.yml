@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: supabase/postgres:15.2.0-beta.0
+    environment:
+      POSTGRES_PASSWORD: supabase_password
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - supabase-data:/var/lib/postgresql/data
+
+  auth:
+    image: supabase/gotrue:latest
+    environment:
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://postgres:supabase_password@db:5432/postgres
+      GOTRUE_SITE_URL: http://localhost:3000
+    ports:
+      - "9999:9999"
+    depends_on:
+      - db
+
+  realtime:
+    image: supabase/realtime:latest
+    environment:
+      DB_HOST: db
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASSWORD: supabase_password
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+
+volumes:
+  supabase-data:
