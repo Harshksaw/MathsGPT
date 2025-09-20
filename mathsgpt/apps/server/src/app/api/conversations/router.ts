@@ -2,17 +2,18 @@ import { NextResponse } from 'next/server';
 
 import { getClientIp } from '@/utils/ip';
 import { z } from 'zod';
-import { supabaseAdmin } from '@/lib/dbClient';
+import { db } from '@/lib/dbClient';
 
 const CreateSchema = z.object({
   title: z.string().trim().min(1).max(120).optional(),
-  system: z.string().trim().min(1).max(2000).optional(), 
+  system: z.string().trim().min(1).max(2000).optional(),
 });
 
 export async function GET(req: Request) {
+  console.log('Fetching conversations');
   const ip = getClientIp(req.headers);
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await db
     .from('conversations')
     .select('id,title,status,created_at,updated_at')
     .eq('user_ip', ip)
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: e.message }, { status: 400 });
   }
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await db
     .from('conversations')
     .insert([{ user_ip: ip, title, messages, status: 'ready' }])
     .select('id,title,status,created_at,updated_at')
