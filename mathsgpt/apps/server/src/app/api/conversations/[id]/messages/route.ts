@@ -8,7 +8,14 @@ import { completeOnce } from '@/services/chatService';
 type Message = { role: 'system'|'user'|'assistant'; content: string };
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
+
+
   const ip = getClientIp(req.headers);
+  const{id } = await params;
+
+  console.log('🚀 ~ :16 ~ POST ~ id::==', id)
+
+  
 
 
   let body: { content?: string; model?: string };
@@ -16,7 +23,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (!body?.content) return NextResponse.json({ error: 'content is required' }, { status: 400 });
 
 
-  const { data: convo, error } = await getConversationById(params.id, ip);
+  const { data: convo, error } = await getConversationById(id, ip);
   if (error || !convo) return NextResponse.json({ error: `Conversation not found ${error}` }, { status: 404 });
 
 
@@ -27,6 +34,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   try {
 
     const assistantText = await completeOnce(messages, body.model);
+
+    console.log('🚀 ~ :34 ~ POST ~ assistantText::==', assistantText)
+
 
 
     const updated: Message[] = [...messages, { role: 'assistant', content: assistantText }];
